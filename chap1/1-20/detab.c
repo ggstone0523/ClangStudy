@@ -11,6 +11,7 @@ int main()
 	return 0;
 }
 
+/* change tab to space */
 int printDetab(void)
 {
 	char c;
