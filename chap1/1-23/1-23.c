@@ -23,14 +23,31 @@ void deleteComment(char line[]) {
 	char beforeC, currC;
 	int index = 0;
 	int commentIndex = -1;
+	int sQSt, dQSt;
 
 	if(isLineComments == 1) {
 		commentIndex = 1;
 	}
 
 	beforeC = ' ';
+	sQSt = 0;
+	dQSt = 0;
 	while((currC = line[index]) != '\0') {
-		if(beforeC == '/' && (currC == '/' || currC == '*') && commentIndex == -1) {
+		if(currC == '\'') {
+			if(sQSt == 0 && commentIndex == -1) {
+				sQSt = 1;
+			} else if(sQSt == 1) {
+				sQSt = 0;
+			}
+		}
+		if(currC == '\"') {
+			if(dQSt == 0 && commentIndex == -1) {
+				dQSt = 1;
+			} else if(dQSt == 1) {
+				dQSt = 0;
+			}
+		}
+		if(beforeC == '/' && (currC == '/' || currC == '*') && commentIndex == -1 && sQSt == 0 && dQSt == 0) {
 			commentIndex = index;
 			line[index-1] = '\0';
 			if(currC == '*') {
