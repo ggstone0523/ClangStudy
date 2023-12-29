@@ -5,11 +5,11 @@
 void squeeze(char s1[], char s2[]);
 
 int main() {
-	char s1[] = "abcde";
-	char s2[] = "hello, my little friend";
+	char s1[] = "hello, my little friend";
+	char s2[] = "abcde";
 
 	squeeze(s1, s2);
-	printf("%s\n", s2);
+	printf("%s\n", s1);
 	return 0;
 }
 
@@ -22,25 +22,25 @@ void squeeze(char s1[], char s2[]) {
 	i = 0;
 	j = 0;
 	k = 0;
-	while(j < lens2) {
-		while(i < lens1) {
-			if(s1[i++] == s2[j]) {
-				--i;
+	while(i < lens1) {
+		while(j < lens2) {
+			if(s2[j++] == s1[i]) {
+				--j;
 				break;
 			}
 		}
-		if(i == lens1) {
-			s3[k++] = s2[j];
+		if(j == lens2) {
+			s3[k++] = s1[i];
 		}
-		i = 0;
-		++j;
+		j = 0;
+		++i;
 	}
 	s3[k] = '\0';
 	k = 0;
-	while(k < lens2 && s3[k] != '\0') {
-		s2[k] = s3[k];
+	while(k < lens1 && s3[k] != '\0') {
+		s1[k] = s3[k];
 		++k;
 	}
-	s2[k] = s3[k];
+	s1[k] = s3[k];
 	return;
 }
