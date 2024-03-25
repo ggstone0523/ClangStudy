@@ -14,10 +14,9 @@ int main() {
 	printf("Search for %s\n\n", pattern);
 
 	while(getLine(line, MAXLINE) > 0) {
-		if((foundIdx = strindex(line, pattern)) >= 0) {
-			printf("%s: %d\n", line, foundIdx);
-			found++;
-		}
+		foundIdx = strindex(line, pattern);
+		printf("%s: %d\n", line, foundIdx);
+		found++;
 	}
 	return found;
 }
