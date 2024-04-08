@@ -40,7 +40,9 @@ int getch() {
 
 int getop(char s[]) {
 	int i, c;
-	static char n = '\0';  // 4-11 homework answer: delete ungetch using internal static variable (43 - 48 line, 58-59 line)
+	
+	// 4-11 homework answer: Change the structure of the function by using internal static variable without using ungetch function (45 - 50 line, 60-61 line)
+	static char n = '\0';
 	if(n != ' ' && n != '\t' && n != '\0')
 		s[0] = c = n;
 	else
