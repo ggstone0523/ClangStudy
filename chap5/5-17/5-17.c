@@ -6,7 +6,7 @@
 #define MAXLINES 5000
 #define MAXLEN 1024
 char *lineptr[MAXLINES];
-char *fieldlineptr[MAXLINES][MAXLEN];
+char *fieldlineptr[MAXLEN][MAXLINES];
 
 int getLine(char line[], int maxline);
 int readlines(char *lineptr[], int maxlines);
@@ -17,7 +17,8 @@ int dictcmp(char *, char *);
 void tolowerstr(char temp[], char *v);
 void qSort(void *lineptr[], int lowerupperEq, int left, int right, int (*comp)(void *, void *));
 void qSortReverse(void *lineptr[], int lowerupperEq, int left, int right, int (*comp)(void *, void *));
-void splitlinefield(char *fieldlineptr[][MAXLEN]);
+void splitlinefield(char *fieldlineptr[][MAXLINES], int *ptrlineidx, int *ptrlenidx);
+void fieldwritelines(char *fieldlineptr[][MAXLINES], int ptrlineidx, int ptrlenidx);
 
 int getLine(char line[], int maxline) {
 	int i = 0;
@@ -167,21 +168,22 @@ void qSortReverse(void *v[], int lowerupperEq, int left, int right, int (*comp)(
 	qSortReverse(v, lowerupperEq, last+1, right, comp);
 }
 
-void splitlinefield(char *fieldlineptr[][MAXLEN]) {
-	int ptrlineidx = 0;
-	int ptrlenidx = 0;
+void splitlinefield(char *fieldlineptr[][MAXLINES], int *ptrlineidx, int *ptrlenidx) {
 	int len, nlines;
 	int startlineidx = 0;
 	int lineidx = 0;
+	int i, j;
 	char *p, line[MAXLEN];
-
+	
 	nlines = 0;
+	*ptrlineidx = 0;
+	*ptrlenidx = 0;
 	while((len = getLine(line, MAXLEN)) > 0) {
 		if(nlines >= MAXLINES)
 			return;
 		else {
 			lineidx = 0;
-			ptrlenidx = 0;
+			*ptrlenidx = 0;
 			while(1) {
 				startlineidx = lineidx;
 				while(line[lineidx] != ',' && line[lineidx] != '\0' && line[lineidx] != '\n') {
@@ -192,22 +194,25 @@ void splitlinefield(char *fieldlineptr[][MAXLEN]) {
 					return;
 				line[lineidx] = '\0';
 				strcpy(p, &line[startlineidx]);
-				fieldlineptr[ptrlineidx][ptrlenidx] = p;
-				ptrlenidx++;
+				fieldlineptr[*ptrlenidx][*ptrlineidx] = p;
+				(*ptrlenidx)++;
 				if(lineidx == len) {
 					break;
 				}
 				lineidx++;
 			}
 		}
-		ptrlineidx++;
+		(*ptrlineidx)++;
 		nlines++;
 	}
+}
 
+void fieldwritelines(char *fieldlineptr[][MAXLINES], int ptrlineidx, int ptrlenidx) {
 	int i, j;
+
 	for(i = 0; i < ptrlineidx; i++) {
-		for(j = 0; j < 7; j++) {
-			printf("%s ", fieldlineptr[i][j]);
+		for(j = 0; j < ptrlenidx; j++) {
+			printf("%s ", fieldlineptr[j][i]);
 		}
 		printf("\n");
 	}
@@ -215,8 +220,11 @@ void splitlinefield(char *fieldlineptr[][MAXLEN]) {
 
 int main(int argc, char *argv[]) {
 	int nlines;
+	int val;
 	int lowerupperEq = 0;
 	int fieldsort = 0;
+	int ptrlineidx, ptrlenidx;
+	char *fieldoptions;
 	void (*sort)(void *v[], int, int, int, int (*)(void *, void *)) = qSort;
 	int (*cmp)(void *, void *) = (int (*)(void *, void *))strcmp;
 
@@ -237,11 +245,51 @@ int main(int argc, char *argv[]) {
 					break;
 				case 's':
 					fieldsort = 1;
-					splitlinefield(fieldlineptr);
-					return 0;
+					splitlinefield(fieldlineptr, &ptrlineidx, &ptrlenidx);
+					fieldoptions = argv[argc] + 1;
 					break;
 			}
 		}
+	}
+
+	if(fieldsort) {
+		while(*fieldoptions != '\0') {
+			val = 0;
+			while(isdigit(*fieldoptions)) {
+				val = val * 10 + (*fieldoptions - '0');
+				fieldoptions++;
+			}
+			if(val >= ptrlenidx) {
+				printf("Input value is larger than column size!\n");
+				return 0;
+			}
+
+			cmp = (int (*)(void *, void *))strcmp;
+			sort = qSort;
+			lowerupperEq = 0;
+			while(!isdigit(*fieldoptions) && (*fieldoptions != '\0')) {
+				switch(*fieldoptions) {
+					case 'n':
+						cmp = (int (*)(void *, void *))numcmp;
+						break;
+					case 'r':
+						sort = qSortReverse;
+						break;
+					case 'f':
+						lowerupperEq = 1;
+						break;
+					case 'd':
+						cmp = (int (*)(void *, void *))dictcmp;
+						break;
+				}
+				fieldoptions++;
+			}
+
+			(*sort)((void **)fieldlineptr[val], lowerupperEq, 0, ptrlineidx-1, cmp);
+		}
+
+		fieldwritelines(fieldlineptr, ptrlineidx, ptrlenidx);
+		return 0;
 	}
 
 	if((nlines = readlines(lineptr, MAXLINES)) >= 0) {
@@ -250,6 +298,6 @@ int main(int argc, char *argv[]) {
 		return 0;
 	} else {
 		printf("input too big to sort\n");
-		return 1;
+		return 0;
 	}
 }

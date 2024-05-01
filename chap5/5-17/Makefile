@@ -1,12 +1,7 @@
 all: build test clean
-test1: build test2 clean
 
 build:
 	gcc 5-17.c
-
-test2:
-	./a.out -s < testfilefield
-	cat testfilefield
 
 test:
 	./a.out -n -r < testfilenum
@@ -24,6 +19,12 @@ test:
 	./a.out < testfiledictstr
 	./a.out -d < testfiledictstr
 	./a.out -df < testfiledictstr
+	./a.out -s0d1d2d3d < testfilefield
+	./a.out -s1d < testfilefield
+	./a.out -s0d1d4d3d < testfilefield
+	./a.out -s0rd < testfilefield
+	./a.out -s0dr1d2rd3d < testfilefield
+	cat testfilefield
 
 clean:
 	rm -rf ./a.out
