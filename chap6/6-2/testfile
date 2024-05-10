@@ -1,0 +1,18 @@
+#include <stdio.h>
+
+int _a();
+
+int _a() {
+	return 0;
+}
+
+/*
+author: yusun choi
+date: 24.05.07
+*/
+int main() {
+	// this function print "hello world"
+	printf("\"hello, world\n\"");
+	_a();
+	return 0;
+}
