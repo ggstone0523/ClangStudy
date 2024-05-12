@@ -12,7 +12,9 @@ date: 24.05.07
 */
 int main() {
 	// this function print "hello world"
-	printf("\"hello, world\n\"");
+	int store = 1;
+	int includeone = 0;
+	printf("\"hello, world%d: %d\n\"", store, includeone);
 	_a();
 	return 0;
 }

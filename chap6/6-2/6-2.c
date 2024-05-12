@@ -12,8 +12,15 @@ struct tnode {
 	struct tnode *left;
 	struct tnode *right;
 };
+struct troot {
+	char sword[MAXWORD];
+	struct tnode *root;
+	struct troot *left;
+	struct troot *right;
+};
 char buf[MAXSIZE];
 int bufidx = -1;
+struct troot *troothead = NULL;
 
 struct tnode *addtree(struct tnode *p, char *w);
 void treeprint(struct tnode *p);
@@ -22,6 +29,8 @@ struct tnode *talloc();
 char *strDup(char *s);
 char getch();
 void ungetch(char c);
+struct troot *getroot(char *w, struct troot *troothead, int n);
+void multitreeprint(struct troot *troothead);
 
 char getch() {
 	return ((bufidx < 0) ? getchar() : buf[bufidx--]);
@@ -113,6 +122,20 @@ struct tnode *talloc() {
 	return (struct tnode *)malloc(sizeof(struct tnode));
 }
 
+struct troot *tralloc() {
+	return (struct troot *)malloc(sizeof(struct troot));
+}
+
+void multitreeprint(struct troot *troothead) {
+	if(troothead != NULL) {
+		multitreeprint(troothead->left);
+		printf("%s\n", troothead->sword);
+		treeprint(troothead->root);
+		printf("\n");
+		multitreeprint(troothead->right);
+	}
+}
+
 void treeprint(struct tnode *p) {
 	if(p != NULL) {
 		treeprint(p->left);
@@ -138,14 +161,64 @@ struct tnode *addtree(struct tnode *p, char *w) {
 	return p;
 }
 
-int main() {
-	struct tnode *root;
+struct troot *gettroot(char *w, struct troot **troothead, int n) {
+	struct troot *temp = *troothead;
+	struct troot *prevtemp;
 	char word[MAXWORD];
+	int cmpret = 0;
+	int rightorleft = 0;
+	
+	if(*troothead == NULL) {
+		*troothead = tralloc();
+		strncpy((*troothead)->sword, w, n);
+		(*troothead)->sword[n] = '\0';
+		(*troothead)->left = NULL;
+		(*troothead)->right = NULL;
+		return *troothead;
+	}
 
-	root = NULL;
+	while(temp !=  NULL) {
+		cmpret = strncmp(temp->sword, w, n);
+		prevtemp = temp;
+		if(cmpret == 0) 
+			return temp;
+		else if(cmpret < 0) {
+			temp = temp->right;
+			rightorleft = 0;
+		} else if(cmpret > 0) {
+			temp = temp->left;
+			rightorleft = 1;
+		}
+	}
+
+	temp = tralloc();
+	strncpy(temp->sword, w, n);
+	temp->sword[n] = '\0';
+	if(rightorleft) {
+		prevtemp->left = temp;
+	} else {
+		prevtemp->right = temp;
+	}
+	temp->left = NULL;
+	temp->right = NULL;
+	return temp;
+}
+
+int main(int argc, char *argv[]) {
+	struct troot *tnoderoot;
+	char word[MAXWORD];
+	int n = 6;
+
+	if(argc == 2) {
+		n = atoi(argv[1]);
+	}
+
+	tnoderoot = NULL;
 	while(getword(word, MAXWORD) != EOF)
-		if(isalpha(word[0]))
-			root = addtree(root, word);
-	treeprint(root);
+		if(isalpha(word[0])) {
+			tnoderoot = gettroot(word, &troothead, n);
+			tnoderoot->root = addtree(tnoderoot->root, word);
+		}
+	multitreeprint(troothead);
 	return 0;
 }
