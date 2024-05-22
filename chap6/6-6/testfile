@@ -1,0 +1,12 @@
+#include <stdio.h>
+
+#define A 0
+#define SIZE 1024
+
+int main() {
+	int a = A;
+	char str[SIZE];
+
+	printf("%d\n", a);
+	return A;
+}
