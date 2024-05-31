@@ -5,6 +5,7 @@ build:
 
 test:
 	./a.out < testfile
+	cat testfile
 
 clean:
 	rm -rf ./a.out
