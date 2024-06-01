@@ -6,6 +6,7 @@
 void minscanf(char *fmt, ...);
 int atoo(char *s);
 int atox(char *s);
+int getstr(char s[], char *p);
 
 int atoo(char *s) {
 	int ival = 0;
@@ -46,11 +47,28 @@ int atox(char *s) {
 	
 }
 
+int getstr(char s[], char *p) {
+	int isminus = 1;
+	int sidx = 0;
+	char c;
+	
+	for(c = getchar(); c != *(p+1) && c!= '\n'; c = getchar()) {
+		if(c == '-') {
+			isminus = -1;
+			continue;
+		}
+		s[sidx] = c;
+		sidx++;	
+	}
+	s[sidx] = '\0';
+
+	return isminus;
+}
+
 void minscanf(char *fmt, ...) {
 	va_list ap;
 	char c;
 	char s[1024];
-	int sidx = 0;
 	char *cval, *p;
 	char **sval;
 	int *ival;
@@ -62,38 +80,21 @@ void minscanf(char *fmt, ...) {
 		if(*p != '%')
 			continue;
 		
-		sidx = 0;
 		isminus = 1;
 		switch(*++p) {
 		case 'd':
 			ival = va_arg(ap, int *);
-			for(c = getchar(); c != *(p+1) && c!= '\n'; c = getchar()) {
-				if(c == '-') {
-					isminus = -1;
-					continue;
-				}
-				s[sidx] = c;
-				sidx++;	
-			}
-			s[sidx] = '\0';
+			isminus = getstr(s, p);
 			*ival = atoi(s) * isminus;
 			break;
 		case 'u':
 			ival = va_arg(ap, int *);
-			for(c = getchar(); c != *(p+1) && c!= '\n'; c = getchar()) {
-				s[sidx] = c;
-				sidx++;	
-			}
-			s[sidx] = '\0';
+			getstr(s, p);
 			*ival = atoi(s);
 			break;
 		case 'i':
 			ival = va_arg(ap, int *);
-			for(c = getchar(); c != *(p+1) && c!= '\n'; c = getchar()) {
-				s[sidx] = c;
-				sidx++;	
-			}
-			s[sidx] = '\0';
+			getstr(s, p);
 			if(s[0] == '0') {
 				if(s[1] == 'x' || s[1] == 'X')
 					*ival = atox(s);
@@ -102,26 +103,16 @@ void minscanf(char *fmt, ...) {
 			} else
 				*ival = atoi(s);
 			break;
+		case 'e':
+		case 'g':
 		case 'f':
 			dval = va_arg(ap, double *);
-			for(c = getchar(); c != *(p+1) && c != '\n'; c = getchar()) {
-				if(c == '-') {
-					isminus = -1;
-					continue;
-				}
-				s[sidx] = c;
-				sidx++;
-			}
-			s[sidx] = '\0';
+			isminus = getstr(s, p);
 			*dval = atof(s) * isminus;
 			break;
 		case 's':
 			sval = va_arg(ap, char **);
-			for(c = getchar(); c != *(p+1) && c != '\n'; c = getchar()) {
-				s[sidx] = c;
-				sidx++;
-			}
-			s[sidx] = '\0';
+			getstr(s, p);
 			*sval = strdup(s);
 			break;
 		case 'c':
@@ -131,20 +122,12 @@ void minscanf(char *fmt, ...) {
 			break;
 		case 'o':
 			ival = va_arg(ap, int *);
-			for(c = getchar(); c != *(p+1) && c!= '\n'; c = getchar()) {
-				s[sidx] = c;
-				sidx++;	
-			}
-			s[sidx] = '\0';
+			getstr(s, p);
 			*ival = atoo(s);
 			break;
 		case 'x':
 			ival = va_arg(ap, int *);
-			for(c = getchar(); c != *(p+1) && c!= '\n'; c = getchar()) {
-				s[sidx] = c;
-				sidx++;	
-			}
-			s[sidx] = '\0';
+			getstr(s, p);
 			*ival = atox(s);
 			break;
 		default:
@@ -159,10 +142,10 @@ int main() {
 	unsigned int u;
 	char c;
 	char *s;
-	double f;
+	double f, e, g;
 	
-	minscanf("%d %c %s %f %o %x %u %i", &d, &c, &s, &f, &o, &x, &u, &i);
-	printf("%d %c %s %f %d %d %d %d\n", d, c, s, f, o, x, u, i);
+	minscanf("%d %c %s %f %o %x %u %i %e %g", &d, &c, &s, &f, &o, &x, &u, &i, &e, &g);
+	printf("%d %c %s %f %d %d %d %d %f %f\n", d, c, s, f, o, x, u, i, e, g);
 
 	return 0;
 }
