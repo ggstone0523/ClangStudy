@@ -1,9 +1,13 @@
 #include <fcntl.h>
+#include <stdio.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <unistd.h>
 
-#define NULL 0
-#define EOF (-1)
 #define PERMS 0666
 #define OPEN_MAX 20
+#define BUFSIZE 1024
 
 typedef struct _iobuf {
 	int cnt;
@@ -11,13 +15,9 @@ typedef struct _iobuf {
 	char *base;
 	int flag;
 	int fd;
-} FILE;
+} FILET;
 
-extern FILE _iob[OPEN_MAX];
-
-#define stdin  (&_iob[0])
-#define stdout (&_iob[1])
-#define stderr (&_iob[2])
+FILET _iob[OPEN_MAX];
 
 enum _flags {
 	_READ = 01,
@@ -27,21 +27,12 @@ enum _flags {
 	_ERR = 020
 };
 
-int _fillbuf(FILE *);
-int _flushbuf(int, FILE *);
+FILET *fopent(char *name, char *mode);
+int _fillbuft(FILET *fp);
 
-#define feof(p) (((p)->flag & _EOF) != 0)
-#define ferror(p) (((p)->flag & _ERR) != 0)
-#define fileno(p) ((p)->fd)
-
-#define getc(p) (--(p)->cnt >= 0 ? (unsigned char) *(p)->ptr++ : _fillbuf(p))
-#define putc(x, p) (--(p)->cnt >= 0 ? *(p)->ptr++ = (x) : _flushbuf((x), p))
-#define getchar() getc(stdin)
-#define putchar(x) putc((x), stdout)
-
-FILE *fopen(char *name, char *mode) {
+FILET *fopent(char *name, char *mode) {
 	int fd;
-	FILE *fp;
+	FILET *fp;
 
 	if(*mode != 'r' && *mode != 'w' && *mode != 'a')
 		return NULL;
@@ -68,7 +59,7 @@ FILE *fopen(char *name, char *mode) {
 	return fp;
 }
 
-int _fillbuf(FILE *fp) {
+int _fillbuft(FILET *fp) {
 	int bufsize;
 
 	if((fp->flag&(_READ|_EOF|_ERR)) != _READ)
@@ -89,4 +80,20 @@ int _fillbuf(FILE *fp) {
 	}
 
 	return (unsigned char)*fp->ptr++;
+}
+
+int main() {
+	FILET *fp;
+	struct timeval start, end;
+
+	gettimeofday(&start, NULL);
+	
+	fp = fopent("testfile", "r");
+	_fillbuft(fp);
+	
+	gettimeofday(&end, NULL);
+	printf("bitsfp execution time: %ld\n", ((end.tv_sec * 1000000) + end.tv_usec) - ((start.tv_sec * 1000000) + start.tv_usec));
+	printf("%s\n", fp->base);
+
+	return 0;
 }
