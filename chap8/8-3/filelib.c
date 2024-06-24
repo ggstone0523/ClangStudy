@@ -33,8 +33,8 @@ void _flushbuft(char c, FILET *fp);
 void fflusht(FILET *fp);
 void fcloset(FILET *fp);
 
-#define getc(p) (--(p)->cnt >= 0 ? (unsigned char) *(p)->ptr++ : _fillbuft(p))
-#define putc(x,p) (--(p)->cnt >= 0 ? *(p)->ptr++ = (x) : _flushbuft((x),p))
+#define getct(p) (--(p)->cnt >= 0 ? (unsigned char) *(p)->ptr++ : _fillbuft(p))
+#define putct(x,p) (--(p)->cnt >= 0 ? *(p)->ptr++ = (x) : _flushbuft((x),p))
 
 FILET *fopent(char *name, char *mode) {
 	int fd;
@@ -91,7 +91,7 @@ int _fillbuft(FILET *fp) {
 void _flushbuft(char c, FILET *fp) {
 	if((fp->flag&(_WRITE|_EOF|_ERR)) != _WRITE)
 		exit(0);
-	if(fp->flag & _UNBUF == _UNBUF)
+	if(fp->flag & _UNBUF)
 		write(fp->fd, &c, 1);
 	else {
 		if(fp->base == NULL) {
@@ -147,8 +147,8 @@ int main() {
 	fp2 = fopent("writefile", "w");
 	
 	for(i = 0; i < 2048; i++) {
-		c = getc(fp1);
-		putc(c, fp2);
+		c = getct(fp1);
+		putct(c, fp2);
 	}
 	fflusht(fp2);
 
