@@ -25,11 +25,11 @@ void *malloct(unsigned nbytes) {
 	Header *p, *prevp;
 	unsigned nunits;
 
-	if(nbytes == 0) {
-		printf("malloc block size must be positive\n");
+	if(nbytes == 0 || nbytes > NALLOC) {
+		printf("malloc block size must be > 0, <= 1024\n");
 		return NULL;
 	}
-	nunits = (nbytes+sizeof(Header)-1/sizeof(Header)+1);
+	nunits = (nbytes+sizeof(Header)-1)/sizeof(Header)+1;
 	if((prevp = freep) == NULL) {
 		base.s.ptr = freep = prevp = &base;
 		base.s.size = 0;
@@ -72,8 +72,8 @@ void freet(void *ap) {
 	Header *bp, *p;
 
 	bp = (Header *)ap - 1;
-	if(bp->s.size == 0) {
-		printf("malloc block size must be positive\n");
+	if(bp->s.size == 0 || bp->s.size > NALLOC) {
+		printf("malloc block size must be > 0, <= 1024\n");
 		return;
 	}
 	for(p = freep; !(bp > p && bp < p->s.ptr); p = p->s.ptr)
@@ -110,6 +110,7 @@ int main() {
 	int defaultsize;
 	
 	str = (char *)malloct(0);
+	str = (char *)malloct(1025);
 	origin  = (char *)malloct(sizeof(char) * 1000);
 	freet(origin);
 	str = (char *)malloct(sizeof(char) * 6);
@@ -119,6 +120,8 @@ int main() {
 	temp->s.size = 0;
 	freet(str);
 	temp->s.size = 300;
+	freet(str);
+	temp->s.size = 1025;
 	freet(str);
 	temp->s.size = defaultsize;
 	freet(str);

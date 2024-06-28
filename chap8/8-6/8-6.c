@@ -26,7 +26,7 @@ void *malloct(unsigned nbytes) {
 	Header *p, *prevp;
 	unsigned nunits;
 
-	nunits = (nbytes+sizeof(Header)-1/sizeof(Header)+1);
+	nunits = (nbytes+sizeof(Header)-1)/sizeof(Header)+1;
 	if((prevp = freep) == NULL) {
 		base.s.ptr = freep = prevp = &base;
 		base.s.size = 0;
