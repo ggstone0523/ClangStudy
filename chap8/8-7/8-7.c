@@ -26,7 +26,7 @@ void *malloct(unsigned nbytes) {
 	unsigned nunits;
 
 	if(nbytes == 0 || nbytes > NALLOC) {
-		printf("malloc block size must be > 0, <= 1024\n");
+		printf("malloc block size must be > 0, <= NALLOC(%d)\n", NALLOC);
 		return NULL;
 	}
 	nunits = (nbytes+sizeof(Header)-1)/sizeof(Header)+1;
@@ -73,7 +73,7 @@ void freet(void *ap) {
 
 	bp = (Header *)ap - 1;
 	if(bp->s.size == 0 || bp->s.size > NALLOC) {
-		printf("malloc block size must be > 0, <= 1024\n");
+		printf("malloc block size must be > 0, <= NALLOC(%d)\n", NALLOC);
 		return;
 	}
 	for(p = freep; !(bp > p && bp < p->s.ptr); p = p->s.ptr)
