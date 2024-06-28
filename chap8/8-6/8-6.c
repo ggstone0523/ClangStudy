@@ -1,3 +1,5 @@
+#include <stddef.h>
+#include <stdio.h>
 #define NALLOC 1024
 
 typedef long Align;
@@ -15,9 +17,12 @@ typedef union header Header;
 static Header base;
 static Header *freep = NULL;
 
-Header *morecore(unsigned);
+void *malloct(unsigned nbytes);
+static Header *morecoret(unsigned);
+void freet(void *ap);
+void *calloct(unsigned n, unsigned size);
 
-void *malloc(unsigned nbytes) {
+void *malloct(unsigned nbytes) {
 	Header *p, *prevp;
 	unsigned nunits;
 
@@ -39,12 +44,12 @@ void *malloc(unsigned nbytes) {
 			return (void *)(p+1);
 		}
 		if(p == freep)
-			if((p = morecore(nunits)) == NULL)
+			if((p = morecoret(nunits)) == NULL)
 				return NULL;
 	}
 }
 
-static Header *morecore(unsigned nu) {
+static Header *morecoret(unsigned nu) {
 	char *cp, *sbrk(int);
 	Header *up;
 
@@ -55,20 +60,20 @@ static Header *morecore(unsigned nu) {
 		return NULL;
 	up = (Header *)cp;
 	up->s.size = nu;
-	free((void *)(up+1));
+	freet((void *)(up+1));
 	return freep;
 }
 
-void free(void *ap) {
+void freet(void *ap) {
 	Header *bp, *p;
 
 	bp = (Header *)ap - 1;
-	for(p = freep; !(bp > p && bp < p->s.str); p = p->s.str)
-		if(p >= p->s.str && (bp > p || bp < p->s.str))
+	for(p = freep; !(bp > p && bp < p->s.ptr); p = p->s.ptr)
+		if(p >= p->s.ptr && (bp > p || bp < p->s.ptr))
 			break;
 
-	if(bp + bp->s.size == p->s.str) {
-		bp->s.size += p->s.str->s.size;
+	if(bp + bp->s.size == p->s.ptr) {
+		bp->s.size += p->s.ptr->s.size;
 		bp->s.ptr = p->s.ptr->s.ptr;
 	} else
 		bp->s.ptr = p->s.ptr;
@@ -78,4 +83,33 @@ void free(void *ap) {
 	} else
 		p->s.ptr = bp;
 	freep = p;
+}
+
+void *calloct(unsigned n, unsigned size) {
+	char *p, *temp;;
+	int i = 0;
+	int nsize = n * size;
+
+	p = (char *)malloct(nsize);
+	temp = p;
+	while(i < nsize) {
+		*(temp+i) = 0;
+		i++;
+	}
+	return (void *)p;
+}
+
+int main() {
+	char *str;
+	str = calloct(6, sizeof(char));
+	*str = 'h';
+	*(str+1) = 'e';
+	*(str+2) = 'l';
+	*(str+3) = 'l';
+	*(str+4) = 'o';
+	*(str+5) = '\0';
+
+	printf("%s\n", str);
+	freet(str);
+	return 0;
 }
